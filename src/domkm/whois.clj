@@ -1,19 +1,21 @@
 (ns domkm.whois
-  (:require [clojure.java.io :as io]
-            [zweikopf.multi :as rb :refer [call-ruby clojurize Clojurize ruby-eval]])
+  (:require  [zweikopf.multi :as rb :refer [call-ruby clojurize Clojurize ruby-eval]])
   (:import [org.jruby.embed ScriptingContainer LocalContextScope]
-           [org.jruby RubyStruct]))
+           [org.jruby.RubyStruct]
+           [org.jruby.runtime.Block]))
 
 (extend-protocol Clojurize
-  RubyStruct
+  org.jruby.RubyStruct
   (clojurize [this ruby]
-    (persistent!
-      (reduce (fn [acc key]
-                (assoc! acc
-                        (keyword (clojurize key ruby))
-                        (clojurize (call-ruby ruby this "[]" key) ruby)))
-              (transient {})
-              (.members this)))))
+    (let [context (-> ruby .getProvider .getRuntime .getCurrentContext)
+          null-block org.jruby.runtime.Block/NULL_BLOCK]
+      (persistent!
+        (reduce (fn [acc [key val]]
+                  (assoc! acc
+                          (keyword (clojurize key ruby))
+                          (clojurize val ruby)))
+                (transient {})
+                (call-ruby ruby (.each_pair this context null-block) :to_a))))))
 
 (def ^:private ruby (ScriptingContainer. LocalContextScope/THREADSAFE))
 
