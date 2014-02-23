@@ -1,4 +1,4 @@
-(defproject com.domkm/whois "0.0.1-SNAPSHOT"
+(defproject com.domkm/whois "0.0.1"
   :description "A Clojure wrapper for the Ruby WHOIS library (http://ruby-whois.org/) running on JRuby."
   :url "https://github.com/DomKM/whois.clj"
   :license {:name "Eclipse Public License"
